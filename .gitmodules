@@ -1,0 +1,6 @@
+[submodule "unidecode"]
+	path = unidecode
+	url = https://www.tablix.org/~avian/git/unidecode.git
+[submodule "python-nameparser"]
+	path = python-nameparser
+	url = https://github.com/derek73/python-nameparser.git

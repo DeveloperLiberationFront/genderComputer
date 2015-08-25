@@ -3,6 +3,20 @@
 
 Python tool that tries to infer a person's gender from their `name` (mostly first name) and `location` (country). For example, *Andrea* is a first name typically used by men in *Italy* and women in *Germany*, while *Bogdan* is a first name typically used by men irrespective of the country. Similarly, a *Russian* person called *Anna Akhmatova* is more than likely a woman because of the *-ova* suffix.
 
+### Quick example
+```bash
+git clone git@github.com:joshterrell805-historic/genderComputer.git
+cd genderComputer
+git submodule init
+cd python-nameparser
+python2 setup.py build
+cd ../unidecode
+python2 setup.py build
+cd ..
+source env.env
+python2 test.py 
+```
+
 ### Data provenance
 
 The tool uses lists of `male` and `female` first names for different countries. Whenever available, the data came from national statistics institutes and was accompanied by frequency information. See [this list](https://github.com/tue-mdse/genderComputer/blob/master/nameLists/nameLists.md) for details about the source of data for each country.
