@@ -144,7 +144,7 @@ class GenderComputer():
 		self.nameLists = {}
 		
 		'''Name lists per country'''
-		listOfCountries = ['Afganistan', 'Albania', 'Australia', 'Belgium', 'Brazil', 
+		listOfCountries = ['Afghanistan', 'Albania', 'Australia', 'Belgium', 'Brazil', 
 						'Canada', 'Czech', 'Finland', 'Greece', 'Hungary', 'India', 'Iran', 
 						'Ireland', 'Israel', 'Italy', 'Latvia', 'Norway', 'Poland', 'Romania', 
 						'Russia', 'Slovenia', 'Somalia', 'Spain', 'Sweden', 'Turkey', 'UK', 
@@ -204,6 +204,9 @@ class GenderComputer():
 			except:
 				pass
 		
+		# this isn't actually the count. This script assumes it's
+		# the count (eg Australia's stats. But then checkout
+		# USA's.. they aren't counts.. some sort of percentages :'(
 		countMale = 0.0
 		countFemale = 0.0
 		for name in dims:
@@ -216,32 +219,11 @@ class GenderComputer():
 			except:
 				pass
 		
-		if countMale > 0:
-			if countFemale > 0:
-				if countMale != 1.0 or countFemale != 1.0:
-					if countMale > countFemale:
-						prob = countFemale / countMale
-						if prob < self.threshold:
-							gender = "mostly male"
-						else:
-							gender = "unisex"
-					else:
-						prob = countMale / countFemale
-						if prob < self.threshold:
-							gender = "mostly female"
-						else:
-							gender = "unisex"
-				else:
-					gender = "unisex"
-			else:
-				gender = "male"
-		else:
-			if countFemale > 0:
-				gender = "female"
-			else:
-				gender = None
-		
-		return gender
+		csum = countMale + countFemale
+		return {
+			'female': 0.0 if csum == 0 else countFemale / csum,
+			'male': 0.0 if csum == 0 else countMale / csum,
+		}
 	
 	
 	'''Wrapper for <frequencyBasedLookup> that checks if data for the query <country>
@@ -337,31 +319,31 @@ class GenderComputer():
 		'''Try each available country list in turn,
 		and record frequency information.'''
 		genders = set()
-		arbiter = {}
+		prob = {
+			'female.l': 0.0,
+			'male.l': 0.0,
+			'female.c': 0.0,
+			'male.c': 0.0,
+		}
+
+		countryWeights = 0.0
+
 		for country in self.nameLists.keys():
-			gender = self.countryLookup(firstName, country, withDiminutives)
-			if gender is not None:
-				genders.add(gender)
-				try:
-					arbiter[gender] += self.countryStats[country]
-				except:
-					arbiter[gender] = self.countryStats[country]
+			lProb = self.countryLookup(firstName, country, withDiminutives)
+			# country stats is % of Stack Oveflow users in this country
+			# (approximate weight country has)
+			# lProb[gender] is the count(gender)/population
+			countryWeights += self.countryStats[country]
+			prob['female.l'] += self.countryStats[country] * lProb['female']
+			prob['male.l'] += self.countryStats[country] * lProb['male']
+
+		prob['female.l'] = prob['female.l'] / countryWeights
+		prob['male.l'] = prob['male.l'] / countryWeights
 		
-		'''Keep the gender with the highest total count
-		(frequency) aggregated across all countries.'''
-		l = [(g,c) for g, c in arbiter.items()]
-		if len(l):
-			ml = max(l, key=lambda pair:pair[1])
-			gender = ml[0]
-			return gender
-					
-		# If all countries agree on gender, keep. Otherwise ignore
-#		if len(genders) == 1:
-#			return list(genders)[0]
-		
+
 		'''I might have the name in gender.c, but for a different country'''
 		gender = self.genderDotCLookup(firstName, country, strict=False)
-		return gender
+		return prob
 	
 	
 	
