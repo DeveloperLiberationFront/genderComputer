@@ -27,27 +27,6 @@ from nameUtils import only_greek_chars, only_cyrillic_chars
 from nameUtils import leet2eng, inverseNameParts, extractFirstName
 from filters import normaliseCountryName
 
-
-
-def simplifiedGender(gender):
-	if gender is not None:
-		if gender == 'mostly male':
-			return 'male'
-		elif gender == 'mostly female':
-			return 'female'
-		# elif gender == 'unisex':
-		# return ''
-		else:
-			return gender # male, female, unisex
-	return None
-
-def formatOutput(gender, simplified=True):
-	if simplified:
-		return simplifiedGender(gender)
-	else:
-		return gender
-
-
 '''Load the male and female name lists for <country>'''
 def loadData(country, dataPath, hasHeader=True):
 	def loadGenderList(gender, country, dataPath, hasHeader):
@@ -185,92 +164,6 @@ class GenderComputer():
 		self.nameLists['The Netherlands']['male'] 	= malesNL
 		self.nameLists['The Netherlands']['female'] = femalesNL
 		
-		'''Black list of first names'''
-		self.blackList = ['The', 'the', 'nil', 'Nil', 'NULL', 'null', 
-						'stack', 'cache', 'queue', 'core', 'linux', 'Net',
-						'stillo', 'alfa', 'beta', 'testing', 'me']
-		
-		'''Gender-specific words'''
-		self.maleWords = ['Mr.', 'mr.', 'Mr', 'mr', 'Sir', 'sir', 'Captain', 'captain', 'wizard', 
-						'warrior', 'hillbilly', 'beer', 'Mister', 'Lord', 'Duke', 'Baron', 'coolguy']
-		self.femaleWords = ['girl', 'grrl', 'grrrl', 'miss', 'Miss']
-		
-		'''Suffixes'''
-		self.suffixes = {}
-		
-		self.suffixes['Russia'] = {}
-		self.suffixes['Russia']['male'] = {}
-		self.suffixes['Russia']['male']['include'] = ['ov','ev','sky','skiy','iy','uy','oy','skij','ij','uj','oj','off'] 
-		'''in/yn excluded due to B-Rain and Earwin'''
-		self.suffixes['Russia']['male']['exclude'] = ['Liubov','Ljubov','Lyubov','boy','Boy','toy','Toy','dev','Dev'] 
-		'''['Iakov','Jakov','Yakov','dev','Dev','Lev','boy','Boy','toy','Toy']'''
-		self.suffixes['Russia']['female'] = {}
-		self.suffixes['Russia']['female']['include'] = ['ova','eva','skaya','aya','eya','oya','iaya' ]
-		self.suffixes['Russia']['female']['exclude'] = {}
-		
-		self.suffixes['Belarus'] = self.suffixes['Russia']
-		self.suffixes['Ukraine'] = self.suffixes['Russia']
-		self.suffixes['Turkmenistan'] = self.suffixes['Russia']
-		self.suffixes['Kyrgyzstan'] = self.suffixes['Russia']
-		self.suffixes['Tajikistan'] = self.suffixes['Russia']
-		self.suffixes['Kazakhstan'] = self.suffixes['Russia']
-		self.suffixes['Uzbekistan'] = self.suffixes['Russia']
-		self.suffixes['Azerbaijan'] = self.suffixes['Russia']
-		self.suffixes['Uzbekistan'] = self.suffixes['Russia']
-		self.suffixes['Bulgaria'] = self.suffixes['Russia']
-		
-		self.suffixes['Macedonia (FYROM)'] = {}
-		self.suffixes['Macedonia (FYROM)']['male'] = {}
-		self.suffixes['Macedonia (FYROM)']['male']['include'] = ['ov','ev','ski','evsk']
-		self.suffixes['Macedonia (FYROM)']['male']['exclude'] = ['Iakov','Jakov','Yakov','dev','Dev','Lev','boy','Boy','toy','Toy']
-		self.suffixes['Macedonia (FYROM)']['female'] = {}
-		self.suffixes['Macedonia (FYROM)']['female']['include'] = ['ova','eva','ska','evska']
-		self.suffixes['Macedonia (FYROM)']['female']['exclude'] = {}
-		
-		self.suffixes['Poland'] = {}
-		self.suffixes['Poland']['male'] = {}
-		self.suffixes['Poland']['male']['include'] = ['ski','sky','cki','cky']
-		self.suffixes['Poland']['male']['exclude'] = {}
-		self.suffixes['Poland']['female'] = {}
-		self.suffixes['Poland']['female']['include'] = ['cka'] 
-		'''-ska is not included because of Polska = Poland which might be confusing'''
-		self.suffixes['Poland']['female']['exclude'] = {}
-		
-		self.suffixes['Czech Republic'] = {}
-		self.suffixes['Czech Republic']['male'] = {}
-		self.suffixes['Czech Republic']['male']['include'] = ['ov',u'ský','sky',u'ný','ny']
-		self.suffixes['Czech Republic']['male']['include'] = ['ov','sky','ny']
-		self.suffixes['Czech Republic']['male']['exclude'] = {}
-		self.suffixes['Czech Republic']['female'] = {}
-		self.suffixes['Czech Republic']['female']['include'] = ['ova','ska','na',u'ová',u'ská',u'ná']
-		self.suffixes['Czech Republic']['female']['include'] = ['ova','ska','na']
-		self.suffixes['Czech Republic']['female']['exclude'] = {}
-		
-		'''Male Latvian personal and family names typically end in  -s (-š). Some may be derived 
-		from Russian names, with an -s ending: e.g. Vladislavs KAZANOVS
-		Only Russian forms are included since we cannot distinguish between the regular Latvian -s and English plural -s'''
-		
-		self.suffixes['Latvia'] = {}
-		self.suffixes['Latvia']['male'] = {}
-		self.suffixes['Latvia']['male']['include'] = [u'š','ovs','ins']
-		self.suffixes['Latvia']['male']['exclude'] = {}
-		self.suffixes['Latvia']['female'] = {}
-		self.suffixes['Latvia']['female']['include'] = ['ina']
-		self.suffixes['Latvia']['female']['exclude'] = {}
-		
-		self.suffixes['Lithuania'] = {}
-		self.suffixes['Lithuania']['male'] = {}
-		self.suffixes['Lithuania']['male']['include'] = ['aitis', 'utis', 'ytis', 'enas', 'unas', 'inis', 'ynis', 'onis', 'ius', 'elis']
-		self.suffixes['Lithuania']['male']['exclude'] = {}
-		self.suffixes['Lithuania']['female'] = {}
-		self.suffixes['Lithuania']['female']['include'] = ['iene', 'aite', 'yte', 'ute', 'te']
-		self.suffixes['Lithuania']['female']['exclude'] = {}
-		
-		'''All inverse order countries should also be checked for direct order'''
-		self.invOrder = ['Russia','Belarus','Ukraine','Turkmenistan','Kyrgyzstan','Tajikistan','Kazakhstan','Uzbekistan',
-						 'Azerbaijan','Uzbekistan','Hungary','China','Bosnia', 'Serbia','Croatia','Sri Lanka','Vietnam',
-						 'North Korea','South Korea']
-		
 		'''Diminutives list'''
 		fd = open(os.path.join(self.dataPath, 'diminutives.csv'), 'rb')
 		reader = UnicodeReader(fd)
@@ -353,41 +246,15 @@ class GenderComputer():
 	
 	'''Wrapper for <frequencyBasedLookup> that checks if data for the query <country>
 	exists; can format the output.'''
-	def countryLookup(self, firstName, country, withDiminutives, simplified=True):
+	def countryLookup(self, firstName, country, withDiminutives):
 		if country in self.nameLists.keys():
-			gender = self.frequencyBasedLookup(firstName, country, withDiminutives)
-			return formatOutput(gender, simplified)
+			return self.frequencyBasedLookup(firstName, country, withDiminutives)
 		return None
-	
-	'''Checks whether a given <fullName> for a given <country>
-	is <gender> (male/female).'''
-	def checkSuffix(self, fullName, country, gender):
-		for suffix in self.suffixes[country][gender]['include']:
-			if fullName.endswith(suffix):
-				for badSuffix in self.suffixes[country][gender]['exclude']:
-					if fullName.endswith(badSuffix):
-						return None
-				return gender
-		return None
-	
-	'''Given <fullName>, checks both male and female 
-	name suffixes and infers gender for <country>.'''
-	def suffixLookup(self, fullName, country):
-		if self.suffixes.has_key(country):
-			male = self.checkSuffix(fullName, country, 'male')
-			if male is not None:
-				return male
-			else:
-				female = self.checkSuffix(fullName, country, 'female')
-				return female
-		else:
-			return None
 	
 	
 	'''Search for a given <firstName> in the gender.c database.
-	strict=True 	: look only in <country>
-	simplified=True : reduce 'mostly male' to 'male' and 'mostly female' to 'female' '''
-	def genderDotCLookup(self, firstName, country, strict=True, simplified=True):
+	strict=True 	: look only in <country>'''
+	def genderDotCLookup(self, firstName, country, strict=True):
 		gender = None
 		genderCountry = None
 		country = normaliseCountryName(country)
@@ -459,64 +326,20 @@ class GenderComputer():
 		
 		if strict:
 			gender = genderCountry
-		return formatOutput(gender, simplified)
+
+		return gender
 	
-	
-	'''Simple check for gender-specific words (e.g., girl)'''
-	def initialCheck(self, firstName):
-		if firstName in self.blackList or len(firstName) < 2:
-			return 'blacklist'
-		elif firstName in self.maleWords:
-			return 'male'
-		elif firstName in self.femaleWords:
-			return 'female'
-		for word in ['girl']:
-			if firstName.endswith(word) or firstName.startswith(word):
-				return 'female'
-		for word in ['guy', 'captain']:
-			if firstName.endswith(word) or firstName.startswith(word):
-				return 'male'
-		return None
-	
-	
-	''''Try to resolve gender based on <firstName>.
-	Restrict search to a given <country>.'''
-	def resolveFirstName(self, firstName, country, withDiminutives):
-		'''Start with easy checks. If successful 
-		then return gender directly, otherwise continue'''
-		gender = self.initialCheck(firstName)
-		if gender is not None:
-			return gender
-		
-		'''If I have a list for that country, start with it'''
-		if country in self.nameLists.keys():
-			gender = self.countryLookup(firstName, country, withDiminutives, simplified=True)
-			if gender is not None:
-				return gender
-		
-		'''Try gender.c next (strict mode = country-dependent)'''
-		gender = self.genderDotCLookup(firstName, country, strict=True, simplified=True)
-		if gender is not None:
-			return gender
-		
-		return None
 	
 	
 	''''Try to resolve gender based on <firstName>.
 	Look in all countries and resort to arbitrage.'''
 	def resolveFirstNameOverall(self, firstName, withDiminutives):
-		'''Start with easy checks. If successful 
-		then return gender directly, otherwise continue'''
-		gender = self.initialCheck(firstName)
-		if gender is not None:
-			return gender
-		
 		'''Try each available country list in turn,
 		and record frequency information.'''
 		genders = set()
 		arbiter = {}
 		for country in self.nameLists.keys():
-			gender = self.countryLookup(firstName, country, withDiminutives, simplified=True)
+			gender = self.countryLookup(firstName, country, withDiminutives)
 			if gender is not None:
 				genders.add(gender)
 				try:
@@ -537,7 +360,7 @@ class GenderComputer():
 #			return list(genders)[0]
 		
 		'''I might have the name in gender.c, but for a different country'''
-		gender = self.genderDotCLookup(firstName, country, strict=False, simplified=True)
+		gender = self.genderDotCLookup(firstName, country, strict=False)
 		return gender
 	
 	
@@ -553,129 +376,47 @@ class GenderComputer():
 		* try to guess name from vbogdan and bogdanv
 	- if still nothing, inverse and try first name again (maybe country was empty)'''
 	def resolveGender(self, name, country):
-		'''Check if name is written in Cyrillic or Greek script, and transliterate'''
+
+		# Check if name is written in Cyrillic or Greek script, and transliterate
 		if only_cyrillic_chars(name) or only_greek_chars(name):
 			name = unidecode(name)
 		
-		'''Initial check for gender-specific words at the beginning of the name'''
-		f = name.split()[0]
-		if f in self.maleWords:
-			return 'male'
-		elif f in self.femaleWords:
-			return 'female'
-		
-		'''Extract first name from name string'''
 		firstName = extractFirstName(name, 'direct')
 		
-		if country is not None:
-			'''Start with suffixes
-			Works well for Russians (can determine gender based on surname suffix)'''
-			if country in self.suffixes.keys():
-				gender = self.suffixLookup(name, country)
-				if gender is not None:
-					return gender
-			'''If still no luck, extract first name and try to resolve'''
-			gender = self.resolveFirstName(firstName, country, True)
-			if gender is not None:
-				if gender == 'blacklist':
-					return None
-				return gender
-			
-			'''Try to inverse if no luck
-			Hungarians use reversed first/last names order'''
-			if country in self.invOrder:
-				gender = self.suffixLookup(inverseNameParts(name), country)
-				if gender is not None:
-					return gender
-				
-				gender = self.resolveFirstName(extractFirstName(name, 'inverse'), country, True)
-				if gender is not None:
-					if gender == 'blacklist':
-						return None
-					return gender
-			
-			'''Starting to get desperate by now. Assume name is in fact username,
-			and try different tricks:'''
-			if len(name.split()) == 1:
-				'''- Try the Dutch tricks'''
-				if country in ['Belgium', 'The Netherlands', 'South Africa']:
-					positions = [m.start() for m in re.finditer('v', name)]
-					bestMatch = []
-					if len(positions):
-						for pos in positions:
-							gender = self.resolveFirstName(name[:pos], country, True)
-							if gender is not None:
-								if gender != 'blacklist':
-									bestMatch.append(gender)
-					gender = next((g for g in bestMatch if g != 'unisex'), None)
-					if gender is not None:
-						return gender
-					if 'unisex' in bestMatch:
-						return 'unisex'
-				
-				'''- Try to guess first name from: bogdanv, vbogdan'''
-				# bogdanv
-				gender = self.resolveFirstName(name[:-1].lower(), country, True)
-				if gender is not None:
-					if gender == 'blacklist':
-						return None
-					return gender
-				# vbogdan
-				gender = self.resolveFirstName(name[1:].lower(), country, True)
-				if gender is not None:
-					if gender == 'blacklist':
-						return None
-					return gender
-			
-			'''I can't believe I'm trying leet'''
-			nameL = leet2eng(name)
-			gender = self.resolveFirstName(extractFirstName(nameL, 'direct'), country, True)
-			if gender is not None:
-				if gender == 'blacklist':
-					return None
-				return gender
-			
-			'''Try also the unidecoded version'''
-			dname = unidecode(name)
-			gender = self.resolveFirstName(extractFirstName(dname, 'direct'), country, True)
-			if gender is not None:
-				if gender == 'blacklist':
-					return None
-				return gender
-		
-		'''If everything failed, try cross-country'''
-		gender = self.resolveFirstNameOverall(firstName, True)
+		gender = self.tryCrossCountry(firstName)
 		if gender is not None:
-			if gender == 'blacklist':
-				return None
 			return gender
-		'''Try also unidecoded version'''
+
+		gender = self.tryUnidecoded(name)
+		if gender is not None:
+			return gender
+		
+		gender = self.tryRemovingFirstAndLastLetters(name)
+		if gender is not None:
+			return gender
+
+		return None
+
+	def tryCrossCountry(self, firstName):
+		return self.resolveFirstNameOverall(firstName, True)
+
+	def tryUnidecoded(self, name):
 		dname = unidecode(name)
-		gender = self.resolveFirstNameOverall(extractFirstName(dname, 'direct'), True)
-		if gender is not None:
-			if gender == 'blacklist':
-				return None
-			return gender
-		
+		firstName = extractFirstName(dname, 'direct')
+		return self.tryCrossCountry(firstName)
+
+	def tryRemovingFirstAndLastLetters(self, name):
 		if len(name.split()) == 1:
-			'''- Try to guess first name from: bogdanv, vbogdan'''
-			# bogdanv
-			gender = self.resolveFirstNameOverall(name[:-1].lower(), True)
+			firstName = name[:-1].lower()
+			gender = self.tryCrossCountry(firstName)
 			if gender is not None:
-				if gender == 'blacklist':
-					return None
 				return gender
-#			 vbogdan
-			gender = self.resolveFirstNameOverall(name[1:].lower(), True)
-			if gender is not None:
-				if gender == 'blacklist':
-					return None
-				return gender
-				
+
+			firstName = name[1:].lower()
+			gender = self.tryCrossCountry(firstName)
+			return gender
 		return None
 	
-
-
 
 
 if __name__=="__main__":
