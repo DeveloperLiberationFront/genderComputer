@@ -189,7 +189,7 @@ class GenderComputer():
 			self.countryStats[country] = numUsers
 		for country in self.countryStats.keys():
 			self.countryStats[country] = self.countryStats[country] / total
-		
+
 		print 'Finished initialization'
 	
 	
@@ -221,8 +221,8 @@ class GenderComputer():
 		
 		csum = countMale + countFemale
 		return {
-			'female': 0.0 if csum == 0 else countFemale / csum,
-			'male': 0.0 if csum == 0 else countMale / csum,
+			'female': 0 if csum == 0 else countFemale / csum,
+			'male': 0 if csum == 0 else countMale / csum,
 		}
 	
 	
@@ -262,6 +262,8 @@ class GenderComputer():
 					hexFreq = frequencies[idx]
 					if len(hexFreq.strip()) == 1:
 						d[lab2key(mf)] += int(hexFreq, 16)
+
+			print d
 			
 			thr = 256
 			if d['mmale'] - d['mfemale'] > thr:
@@ -326,20 +328,26 @@ class GenderComputer():
 			'male.c': 0.0,
 		}
 
-		countryWeights = 0.0
+		weights = {
+			'male': list(),
+			'female': list(),
+		}
+		totalCountryWeight = 0.0
 
 		for country in self.nameLists.keys():
 			lProb = self.countryLookup(firstName, country, withDiminutives)
 			# country stats is % of Stack Oveflow users in this country
 			# (approximate weight country has)
 			# lProb[gender] is the count(gender)/population
-			countryWeights += self.countryStats[country]
-			prob['female.l'] += self.countryStats[country] * lProb['female']
-			prob['male.l'] += self.countryStats[country] * lProb['male']
+			countryWeight = self.countryStats[country]
+			if lProb['female'] <> 0 or lProb['male'] <> 0:
+				totalCountryWeight += countryWeight
+				weights['female'].append(countryWeight * lProb['female'])
+				weights['male'].append(countryWeight * lProb['male'])
 
-		prob['female.l'] = prob['female.l'] / countryWeights
-		prob['male.l'] = prob['male.l'] / countryWeights
-		
+		if totalCountryWeight <> 0.0:
+			prob['female.l'] = sum(weights['female']) / totalCountryWeight
+			prob['male.l'] = sum(weights['male']) / totalCountryWeight
 
 		'''I might have the name in gender.c, but for a different country'''
 		gender = self.genderDotCLookup(firstName, country, strict=False)
