@@ -395,6 +395,12 @@ class GenderComputer():
 		if gender is not None:
 			return gender
 
+		name = re.sub("\d+", "", name)
+
+		gender = self.tryRemovingFirstAndLastLetters(name)
+		if gender is not None:
+			return gender
+
 		return None
 
 	def tryCrossCountry(self, firstName):
