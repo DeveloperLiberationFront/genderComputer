@@ -14,7 +14,7 @@ cd ../unidecode
 python2 setup.py build
 cd ..
 source env.env
-python2 test.py 
+python2 test.py <username1> <username2> ... <usernameN>
 ```
 
 ### Data provenance

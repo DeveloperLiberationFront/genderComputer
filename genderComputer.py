@@ -1,3 +1,4 @@
+# vim: noet ts=4 sts=4 sw=4:
 # This Python file uses the following encoding: utf-8
 
 """Copyright 2012-2013
