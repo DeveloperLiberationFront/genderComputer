@@ -350,8 +350,11 @@ class GenderComputer():
 			prob['male.l'] = sum(weights['male']) / totalCountryWeight
 
 		'''I might have the name in gender.c, but for a different country'''
-		gender = self.genderDotCLookup(firstName, country, strict=False)
-		return prob
+		# gender = self.genderDotCLookup(firstName, country, strict=False)
+		return {
+			'male': prob['male.l'],
+			'female': prob['female.l'],
+		}
 	
 	
 	
