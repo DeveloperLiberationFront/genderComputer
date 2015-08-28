@@ -30,8 +30,7 @@ from filters import normaliseCountryName
 
 class GenderComputer():
 	def __init__(self, nameListsPath):
-		os.chdir('0717-182')
-		print os.getcwd()
+		os.chdir(os.path.dirname(os.path.realpath(__file__)) + '/0717-182')
 
 	def resolveFirstNameOverall(self, firstName):
 		args = ["./a.out", "-get_gender", firstName]
