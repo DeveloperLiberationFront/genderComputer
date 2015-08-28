@@ -15,6 +15,7 @@ python2 setup.py build
 cd ..
 source env.env
 python2 test.py <username1> <username2> ... <usernameN>
+python2 test.py josh ruth marie mike sam kate betty robin
 ```
 
 ### Data provenance
